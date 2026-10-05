@@ -149,3 +149,19 @@ a {
 #buddy.show #bubble {
   opacity: 1;
 }
+
+/* ---- cat gif (transparent): sits under the typed text, fades in together with the character once text is done ---- */
+#cat-gif {
+  position: absolute;
+  left: 208px;
+  top: 420px;
+  width: 250px;
+  height: 250px;
+  opacity: 0;
+  transition: opacity 3.2s ease-in-out;
+  pointer-events: none;
+  z-index: 2;
+}
+#buddy.show ~ #cat-gif {
+  opacity: 1;
+}
