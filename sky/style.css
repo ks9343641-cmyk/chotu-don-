@@ -70,3 +70,74 @@ html, body {
   color: var(--muted);
   letter-spacing: 0.04em;
 }
+
+/* ==========================================================
+   STEP 2: opening + sky
+   ========================================================== */
+
+#sky {
+  opacity: 0;
+  animation: fadeInSky 4s ease 0.3s forwards;
+  transition: transform 3.5s ease;
+}
+.grain {
+  opacity: 0;
+  animation: fadeInGrain 4s ease 0.3s forwards;
+}
+
+@keyframes fadeInSky   { to { opacity: 1; } }
+@keyframes fadeInGrain { to { opacity: 0.07; } }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(8px); }
+  to   { opacity: 1; transform: none;             filter: blur(0); }
+}
+
+.line {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 4.6vw, 2.4rem);
+  line-height: 1.4;
+  max-width: 18em;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  animation: rise 2.4s ease forwards;
+}
+.line-1 { animation-delay: 2.8s; }
+.line-2 {
+  margin-top: 1.4rem;
+  color: var(--muted);
+  font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+  animation-delay: 6.6s;
+}
+
+.enter-btn {
+  margin-top: 3rem;
+  padding: 14px 34px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid rgba(233, 230, 223, 0.28);
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  letter-spacing: 0.35em;
+  cursor: pointer;
+  opacity: 0;
+  animation: rise 2s ease 9.6s forwards;
+  transition: border-color 0.4s, box-shadow 0.4s, background 0.4s;
+}
+.enter-btn:hover,
+.enter-btn:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 28px var(--glow);
+  background: rgba(185, 167, 255, 0.06);
+}
+
+/* ENTER dabane par: blur + zoom hokar opening gayab */
+.scene.leaving {
+  opacity: 0;
+  filter: blur(14px);
+  transform: scale(1.12);
+  transition-duration: 1.6s;
+}
+body.entered #sky { transform: scale(1.12); }
