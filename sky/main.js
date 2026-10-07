@@ -57,7 +57,7 @@ document.documentElement.style.setProperty("--accent", CONFIG.colors.accent);
 
   let time = 0;
   function frame() {
-    time += 0.016;
+    time += 0.016 * (window.moodSpeed || 1);
     pointer.x += (pointer.targetX - pointer.x) * 0.05;
     pointer.y += (pointer.targetY - pointer.y) * 0.05;
 
@@ -86,7 +86,7 @@ document.documentElement.style.setProperty("--accent", CONFIG.colors.accent);
 
     // floating dust
     for (const d of dust) {
-      d.y -= d.riseSpeed;
+      d.y -= d.riseSpeed * (window.moodSpeed || 1);
       if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; }
       ctx.globalAlpha = d.alpha;
       ctx.fillStyle = "#cbbfff";
@@ -128,13 +128,99 @@ document.documentElement.style.setProperty("--accent", CONFIG.colors.accent);
     setTimeout(() => {
       opening.classList.remove("is-active", "leaving");
 
-      const next = document.createElement("section");
-      next.className = "scene";
-      next.id = "scene-heavy";
-      next.innerHTML = '<p class="line">(Yahan Step 3 aayega: slider)</p>';
-      app.appendChild(next);
-
-      requestAnimationFrame(() => next.classList.add("is-active"));
+            showHeavyScene();
     }, 1700);
   });
 })();
+
+/* ==========================================================
+   STEP 3: "How heavy does today feel?"
+   ========================================================== */
+
+/* Ek scene se doosre scene mein cinematic jaana (aage bhi kaam aayega) */
+function changeScene(currentEl, nextEl) {
+  currentEl.classList.add("leaving");
+  setTimeout(() => {
+    currentEl.classList.remove("is-active", "leaving");
+    document.getElementById("app").appendChild(nextEl);
+    requestAnimationFrame(() => nextEl.classList.add("is-active"));
+  }, 1400);
+}
+
+function showHeavyScene() {
+  const app = document.getElementById("app");
+
+  // Mood overlay (background ka rang/andhera yahin badlega)
+  let mood = document.getElementById("mood");
+  if (!mood) {
+    mood = document.createElement("div");
+    mood.id = "mood";
+    document.body.appendChild(mood);
+  }
+
+  const scene = document.createElement("section");
+  scene.className = "scene";
+  scene.id = "scene-heavy";
+  scene.innerHTML =
+    '<p class="line reveal heavy-question" style="--d:0.4s">' + CONFIG.slider.question + '</p>' +
+    '<div class="slider-wrap reveal" style="--d:1.8s">' +
+      '<input type="range" id="heavy-slider" min="0" max="100" value="50" aria-label="' + CONFIG.slider.question + '">' +
+      '<div class="slider-labels"><span>lighter</span><span>heavier</span></div>' +
+    '</div>' +
+    '<p class="heavy-text reveal" id="heavy-text" style="--d:2.6s"></p>' +
+    '<button class="enter-btn next-btn" id="heavy-next" style="--d:3.4s">CONTINUE</button>';
+
+  app.appendChild(scene);
+  requestAnimationFrame(() => scene.classList.add("is-active"));
+
+  const slider = document.getElementById("heavy-slider");
+  const textEl = document.getElementById("heavy-text");
+  let currentText = "";
+
+  function pickText(value) {
+    const texts = CONFIG.slider.texts;
+    const found = texts.find((t) => value <= t.upTo);
+    return (found || texts[texts.length - 1]).text;
+  }
+
+  function applyMood(value) {
+    const heaviness = value / 100;                 // 0 = halka, 1 = bhaari
+    const warmth = Math.max(0, 1 - value / 50);    // sirf neeche ki values pe
+
+    mood.style.background =
+      "radial-gradient(ellipse at 50% 30%, rgba(255,175,120," + (0.22 * warmth) + "), transparent 70%)," +
+      "rgba(0,0,0," + (0.55 * heaviness) + ")";
+
+    window.moodSpeed = 1 - 0.75 * heaviness;       // bhaari = taare slow
+  }
+
+  function updateText(value, instant) {
+    const next = pickText(value);
+    if (next === currentText) return;
+    currentText = next;
+    if (instant) { textEl.textContent = next; return; }
+    textEl.classList.add("swap");
+    setTimeout(() => {
+      textEl.textContent = next;
+      textEl.classList.remove("swap");
+    }, 350);
+  }
+
+  slider.addEventListener("input", () => {
+    const value = Number(slider.value);
+    applyMood(value);
+    updateText(value, false);
+  });
+
+  applyMood(50);
+  updateText(50, true);
+
+  // CONTINUE: abhi placeholder, Step 4 mein asli cards aayenge
+  document.getElementById("heavy-next").addEventListener("click", () => {
+    const next = document.createElement("section");
+    next.className = "scene";
+    next.id = "scene-cards";
+    next.innerHTML = '<p class="line reveal" style="--d:0.8s">(Yahan Step 4 aayega: cards)</p>';
+    changeScene(scene, next);
+  });
+}
